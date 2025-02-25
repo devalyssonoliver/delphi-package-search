@@ -1,0 +1,146 @@
+unit uSearchMore;
+
+interface
+
+uses
+  System.SysUtils, System.Classes, Vcl.Controls, Vcl.Buttons, Vcl.Forms,
+  Vcl.Dialogs, Vcl.ExtCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids, Vcl.Mask,
+  Vcl.StdCtrls;
+
+type
+  TMore = class(TBitBtn)
+  private
+    FTitulo: string;
+    FLargura: Integer;
+    FAltura: Integer;
+    FBotaoIncluirCaption : String;
+    procedure ExibirPesquisa;
+  protected
+    procedure Click; override;
+  public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+  published
+    property Titulo: string read FTitulo write FTitulo;
+    property Largura: Integer read FLargura write FLargura;
+    property Altura: Integer read FAltura write FAltura;
+  end;
+
+procedure Register;
+
+implementation
+
+procedure Register;
+begin
+  RegisterComponents('ZPackage', [TMore]);
+end;
+
+{ TBotaoPesquisa }
+
+constructor TMore.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  Caption := '...';
+  Width := 25;
+  Height := 25;
+  FLargura := 640;
+  FAltura := 480;
+  FBotaoIncluirCaption  := 'Incluir';
+end;
+
+destructor TMore.Destroy;
+begin
+  inherited Destroy;
+end;
+
+procedure TMore.Click;
+begin
+  inherited Click;
+  ExibirPesquisa;
+end;
+
+procedure TMore.ExibirPesquisa;
+var
+  FormPesquisa: TForm;
+  Cabecalho, Rodape: TPanel;
+  GridResultados: TDBGrid;
+  CampoBusca: TMaskEdit;
+  aLbl: TLabel;
+  BotaoIncluir, BotaoOk, BotaoCancelar : TBitBtn;
+  BotaoEspacamento: Integer;
+begin
+  FormPesquisa := TForm.Create(nil);
+  try
+    // Configuração da Tela de Pesquisa
+    FormPesquisa.BorderStyle := bsDialog;
+    FormPesquisa.Position := poScreenCenter;
+    FormPesquisa.Font.Name := 'Tahoma';
+    FormPesquisa.Font.Size := 8;
+    FormPesquisa.Caption := FTitulo;
+    FormPesquisa.Height := FAltura;
+    FormPesquisa.Width := FLargura;
+
+    // Configuração do Cabeçalho
+    Cabecalho := TPanel.Create(FormPesquisa);
+    Cabecalho.Parent := FormPesquisa;
+    Cabecalho.Align := alTop;
+    Cabecalho.Height := 50;
+
+    // Configuração do Rodapé
+    Rodape := TPanel.Create(FormPesquisa);
+    Rodape.Parent := FormPesquisa;
+    Rodape.Align := alBottom;
+    Rodape.Height := 50;
+
+    // Configuração da Grade de Resultados
+    GridResultados := TDBGrid.Create(FormPesquisa);
+    GridResultados.Parent := FormPesquisa;
+    GridResultados.Align := alClient;
+    GridResultados.BorderStyle := bsNone;
+    GridResultados.TabOrder := 0;
+
+    // Configurações Campo de Busca
+    CampoBusca := TMaskEdit.Create(Cabecalho);
+    CampoBusca.Parent := Cabecalho;
+    CampoBusca.Top := 20;
+    CampoBusca.Left := 5;
+    CampoBusca.Width := FormPesquisa.Width - 30;
+    CampoBusca.TextHint := 'Campo de Busca';
+
+    aLbl := TLabel.Create(Cabecalho);
+    aLbl.Parent := Cabecalho;
+    aLbl.Top := 5;
+    aLbl.Left := 5;
+    aLbl.Caption := 'Pesquisar por...';
+
+    BotaoEspacamento := 10;
+
+    // Configuração dos Botões
+    BotaoIncluir := TBitBtn.Create(Rodape);
+    BotaoIncluir.Parent := Rodape;
+    BotaoIncluir.Caption := FBotaoIncluirCaption;
+    BotaoIncluir.Top := 4;
+    BotaoIncluir.Left := 5;
+
+    BotaoCancelar := TBitBtn.Create(Rodape);
+    BotaoCancelar.Parent := Rodape;
+    BotaoCancelar.Kind := bkCancel;
+    BotaoCancelar.Caption := 'Cancelar';
+    BotaoCancelar.Top := 4;
+    BotaoCancelar.Left :=  (FormPesquisa.Width - BotaoOk.Width - 15);
+
+    BotaoOk := TBitBtn.Create(Rodape);
+    BotaoOk.Parent := Rodape;
+    BotaoOk.Kind := bkOK;
+    BotaoOk.Caption := 'Confirmar';
+    BotaoOk.Top := 4;
+    BotaoOk.Left := (FormPesquisa.Width - (BotaoOk.Width + BotaoCancelar.Width) - 15);
+
+
+    FormPesquisa.ShowModal;
+  finally
+    FormPesquisa.Release;
+  end;
+end;
+
+end. consegue ajustar para que fique os botões na possição correta?
