@@ -13,8 +13,8 @@ type
     FTitulo: string;
     FLargura: Integer;
     FAltura: Integer;
-    FBotaoIncluirCaption : String;
-    FDataLink : TFieldDataLink;
+    FDataLink: TFieldDataLink;
+    FStyleForm: string;
     procedure ExibirPesquisa;
     function GetDataSource: TDataSource;
     procedure SetDataSource(const Value: TDataSource);
@@ -25,10 +25,10 @@ type
     destructor Destroy; override;
   published
     property Titulo: string read FTitulo write FTitulo;
+    property StyleForm: string read FStyleForm write FStyleForm;
     property Largura: Integer read FLargura write FLargura;
     property Altura: Integer read FAltura write FAltura;
-    property PesquisaDataSource : TDataSource read GetDataSource
-    write SetDataSource;
+    property PesquisaDataSource: TDataSource read GetDataSource write SetDataSource;
   end;
 
 procedure Register;
@@ -40,7 +40,7 @@ begin
   RegisterComponents('ZPackage', [TMore]);
 end;
 
-{ TBotaoPesquisa }
+{ TMore }
 
 constructor TMore.Create(AOwner: TComponent);
 begin
@@ -50,16 +50,13 @@ begin
   Height := 25;
   FLargura := 640;
   FAltura := 480;
-  FBotaoIncluirCaption  := 'Incluir';
   FDataLink := TFieldDataLink.Create;
 end;
 
 destructor TMore.Destroy;
 begin
   if Assigned(FDataLink) then
-  begin
-  FDataLink.Free;
-  end;
+    FDataLink.Free;
   inherited Destroy;
 end;
 
@@ -76,11 +73,12 @@ var
   GridResultados: TDBGrid;
   CampoBusca: TMaskEdit;
   aLbl: TLabel;
-  BotaoIncluir, BotaoOk, BotaoCancelar : TBitBtn;
+  BotaoIncluir, BotaoOk, BotaoCancelar: TBitBtn;
+  Margem, CentroVertical: Integer;
 begin
   FormPesquisa := TForm.Create(nil);
   try
-
+    Margem := 10;
     FormPesquisa.BorderStyle := bsDialog;
     FormPesquisa.Position := poScreenCenter;
     FormPesquisa.Font.Name := 'Tahoma';
@@ -88,75 +86,71 @@ begin
     FormPesquisa.Caption := FTitulo;
     FormPesquisa.Height := FAltura;
     FormPesquisa.Width := FLargura;
+    FormPesquisa.StyleName := StyleForm;
 
     Cabecalho := TPanel.Create(FormPesquisa);
     Cabecalho.Parent := FormPesquisa;
     Cabecalho.Align := alTop;
     Cabecalho.Height := 50;
 
-    Rodape := TPanel.Create(FormPesquisa);
-    Rodape.Parent := FormPesquisa;
-    Rodape.Align := alBottom;
-    Rodape.Height := 50;
-    Rodape.Padding.SetBounds(10, 5, 10, 5);
+    aLbl := TLabel.Create(Cabecalho);
+    aLbl.Parent := Cabecalho;
+    aLbl.Align := alTop;
+    aLbl.AlignWithMargins := True;
+    aLbl.Margins.Left := 5;
+
+    aLbl.Caption := 'Pesquisar por...';
+
+    CampoBusca := TMaskEdit.Create(Cabecalho);
+    CampoBusca.Parent := Cabecalho;
+    CampoBusca.Top := (Margem + Cabecalho.Height - CampoBusca.Height) div 2;
+    CampoBusca.Left := 5;
+    CampoBusca.Width := FLargura - 25;
+    CampoBusca.TextHint := 'Campo de Busca';
 
     GridResultados := TDBGrid.Create(FormPesquisa);
     GridResultados.Parent := FormPesquisa;
     GridResultados.Align := alClient;
     GridResultados.BorderStyle := bsNone;
-    GridResultados.TabOrder := 0;
-    GridResultados.DataSource := GetDatasource;
+    GridResultados.DataSource := GetDataSource;
+    GridResultados.Options := [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack];
 
-    CampoBusca := TMaskEdit.Create(Cabecalho);
-    CampoBusca.Parent := Cabecalho;
-    CampoBusca.Top := 20;
-    CampoBusca.Left := 5;
-    CampoBusca.Width := FormPesquisa.Width - 30;
-    CampoBusca.TextHint := 'Campo de Busca';
+    Rodape := TPanel.Create(FormPesquisa);
+    Rodape.Parent := FormPesquisa;
+    Rodape.Align := alBottom;
+    Rodape.Height := 40;
+    Rodape.BevelOuter := bvNone;
 
-    aLbl := TLabel.Create(Cabecalho);
-    aLbl.Parent := Cabecalho;
-    aLbl.Top := 5;
-    aLbl.Left := 5;
-    aLbl.Caption := 'Pesquisar por...';
 
-    BotaoIncluir := TBitBtn.Create(Rodape);
-    BotaoIncluir.Parent := Rodape;
-    BotaoIncluir.Caption := FBotaoIncluirCaption;
-    BotaoIncluir.Align := alLeft;
-    BotaoIncluir.Margins.Left := 10;
-    BotaoIncluir.Margins.Top := 10;
-    BotaoIncluir.Margins.Bottom := 10;
-    BotaoIncluir.Width := 100;
-
+    // Botão Confirmar
     BotaoOk := TBitBtn.Create(Rodape);
     BotaoOk.Parent := Rodape;
     BotaoOk.Kind := bkOK;
     BotaoOk.Caption := 'Confirmar';
-    BotaoOk.Align := alRight;
-    BotaoOk.Margins.Right := 10;
-    BotaoOk.Margins.Top := 10;
-    BotaoOk.Margins.Bottom := 10;
-    BotaoOk.Width := 100;
+    BotaoOk.Left := Margem;
+    BotaoOk.Top := (Rodape.Height - BotaoOk.Height) div 2;
 
+    // Botão Incluir
+    BotaoIncluir := TBitBtn.Create(Rodape);
+    BotaoIncluir.Parent := Rodape;
+    BotaoIncluir.Caption := 'Incluir';
+    BotaoIncluir.Left := BotaoOk.Left + BotaoOk.Width + Margem;
+    BotaoIncluir.Top := BotaoOk.Top;
 
+    // Botão Cancelar
     BotaoCancelar := TBitBtn.Create(Rodape);
     BotaoCancelar.Parent := Rodape;
     BotaoCancelar.Kind := bkCancel;
     BotaoCancelar.Caption := 'Cancelar';
-    BotaoCancelar.Align := alRight;
-    BotaoCancelar.Margins.Right := 10;
-    BotaoCancelar.Margins.Top := 10;
-    BotaoCancelar.Margins.Bottom := 10;
-    BotaoCancelar.Width := 100;
-
+    BotaoCancelar.Left := Rodape.Width - BotaoCancelar.Width - Margem;
+    BotaoCancelar.Anchors := [akRight];
+    BotaoCancelar.Top := BotaoOk.Top;
 
     FormPesquisa.ShowModal;
   finally
     FormPesquisa.Release;
   end;
 end;
-
 
 function TMore.GetDataSource: TDataSource;
 begin
@@ -169,3 +163,4 @@ begin
 end;
 
 end.
+
