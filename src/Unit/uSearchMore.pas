@@ -1,4 +1,4 @@
-unit uSearchMore;
+Ôªøunit uSearchMore;
 
 interface
 
@@ -18,6 +18,7 @@ type
     procedure ExibirPesquisa;
     function GetDataSource: TDataSource;
     procedure SetDataSource(const Value: TDataSource);
+    procedure OnDbClick(Sender: TObject);
   protected
     procedure Click; override;
   public
@@ -93,7 +94,7 @@ begin
     Cabecalho.Align := alTop;
     Cabecalho.Height := 50;
 
-    aLbl := TLabel.Create(Cabecalho);
+    aLbl := TLabel.Create(FormPesquisa);
     aLbl.Parent := Cabecalho;
     aLbl.Align := alTop;
     aLbl.AlignWithMargins := True;
@@ -101,7 +102,7 @@ begin
 
     aLbl.Caption := 'Pesquisar por...';
 
-    CampoBusca := TMaskEdit.Create(Cabecalho);
+    CampoBusca := TMaskEdit.Create(FormPesquisa);
     CampoBusca.Parent := Cabecalho;
     CampoBusca.Top := (Margem + Cabecalho.Height - CampoBusca.Height) div 2;
     CampoBusca.Left := 5;
@@ -114,6 +115,7 @@ begin
     GridResultados.BorderStyle := bsNone;
     GridResultados.DataSource := GetDataSource;
     GridResultados.Options := [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack];
+    GridResultados.OnDblClick := OnDbClick;
 
     Rodape := TPanel.Create(FormPesquisa);
     Rodape.Parent := FormPesquisa;
@@ -121,30 +123,29 @@ begin
     Rodape.Height := 40;
     Rodape.BevelOuter := bvNone;
 
-
-    // Bot„o Confirmar
-    BotaoOk := TBitBtn.Create(Rodape);
+    // Bot√£o Incluir
+    BotaoIncluir := TBitBtn.Create(FormPesquisa);
+    BotaoIncluir.Parent := Rodape;
+    BotaoIncluir.Caption := 'Incluir';
+    BotaoIncluir.Left := Margem;
+    BotaoIncluir.Top := (Rodape.Height - BotaoIncluir.Height) div 2;
+        // Bot√£o Confirmar
+    BotaoOk := TBitBtn.Create(FormPesquisa);
     BotaoOk.Parent := Rodape;
     BotaoOk.Kind := bkOK;
     BotaoOk.Caption := 'Confirmar';
-    BotaoOk.Left := Margem;
-    BotaoOk.Top := (Rodape.Height - BotaoOk.Height) div 2;
+    BotaoOk.Left := BotaoIncluir.Left + BotaoIncluir.Width + Margem;
+    BotaoOk.Top := BotaoIncluir.Top;
+    BotaoOk.Name := 'btnConfirmar';
 
-    // Bot„o Incluir
-    BotaoIncluir := TBitBtn.Create(Rodape);
-    BotaoIncluir.Parent := Rodape;
-    BotaoIncluir.Caption := 'Incluir';
-    BotaoIncluir.Left := BotaoOk.Left + BotaoOk.Width + Margem;
-    BotaoIncluir.Top := BotaoOk.Top;
-
-    // Bot„o Cancelar
-    BotaoCancelar := TBitBtn.Create(Rodape);
+    // Bot√£o Cancelar
+    BotaoCancelar := TBitBtn.Create(FormPesquisa);
     BotaoCancelar.Parent := Rodape;
     BotaoCancelar.Kind := bkCancel;
     BotaoCancelar.Caption := 'Cancelar';
     BotaoCancelar.Left := Rodape.Width - BotaoCancelar.Width - Margem;
     BotaoCancelar.Anchors := [akRight];
-    BotaoCancelar.Top := BotaoOk.Top;
+    BotaoCancelar.Top := BotaoIncluir.Top;
 
     FormPesquisa.ShowModal;
   finally
@@ -155,6 +156,27 @@ end;
 function TMore.GetDataSource: TDataSource;
 begin
   Result := FDataLink.Datasource;
+end;
+
+procedure TMore.OnDbClick(Sender: TObject);
+var
+  aForm: TCustomForm;
+  i: Integer;
+begin
+  aForm := GetParentForm(TForm(TDBGrid(Sender).Parent));
+  for i := 0 to aForm.ComponentCount - 1 do
+  begin
+    if aForm.Components[i] is TBitBtn then
+    begin
+      if (aForm.Components[i].Name = 'btnConfirmar') then
+      begin
+        TBitBtn(aForm.Components[i]).Click;
+        Break;
+      end;
+
+    end;
+  end;
+
 end;
 
 procedure TMore.SetDataSource(const Value: TDataSource);
