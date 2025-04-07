@@ -101,7 +101,10 @@
         <DCCReference Include="dbrtl.dcp"/>
         <DCCReference Include="vclwinx.dcp"/>
         <DCCReference Include="vcldb.dcp"/>
+        <DCCReference Include="designide.dcp"/>
+        <DCCReference Include="dcldb.dcp"/>
         <DCCReference Include="..\Unit\uSearchMore.pas"/>
+        <DCCReference Include="..\Unit\uSearchMoreReg.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

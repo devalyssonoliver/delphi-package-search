@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Classes, Vcl.Controls, Vcl.Buttons, Vcl.Forms,
   Vcl.Dialogs, Vcl.ExtCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids, Vcl.Mask,
-  Vcl.StdCtrls, Vcl.DBCtrls;
+  Vcl.StdCtrls, Vcl.DBCtrls, DesignIntf, dbreg;
 
 type
   TMore = class(TBitBtn)
@@ -19,6 +19,9 @@ type
     function GetDataSource: TDataSource;
     procedure SetDataSource(const Value: TDataSource);
     procedure OnDbClick(Sender: TObject);
+    procedure OnChangeEdt(Sender: TObject);
+    procedure SetPesquisaIndexConsulta(const Value: string);
+    function GetPesquisaIndexConsulta: string;
   protected
     procedure Click; override;
   public
@@ -29,17 +32,13 @@ type
     property StyleForm: string read FStyleForm write FStyleForm;
     property Largura: Integer read FLargura write FLargura;
     property Altura: Integer read FAltura write FAltura;
-    property PesquisaDataSource: TDataSource read GetDataSource write SetDataSource;
-  end;
+    property DataSource: TDataSource read GetDataSource write SetDataSource;
+    property PesquisaIndexConsulta: string read GetPesquisaIndexConsulta write SetPesquisaIndexConsulta;
 
-procedure Register;
+  end;
 
 implementation
 
-procedure Register;
-begin
-  RegisterComponents('ZPackage', [TMore]);
-end;
 
 { TMore }
 
@@ -108,10 +107,12 @@ begin
     CampoBusca.Left := 5;
     CampoBusca.Width := FLargura - 25;
     CampoBusca.TextHint := 'Campo de Busca';
+    CampoBusca.OnChange := OnChangeEdt;
 
     GridResultados := TDBGrid.Create(FormPesquisa);
     GridResultados.Parent := FormPesquisa;
     GridResultados.Align := alClient;
+    GridResultados.Name := 'grdResultados';
     GridResultados.BorderStyle := bsNone;
     GridResultados.DataSource := GetDataSource;
     GridResultados.Options := [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack];
@@ -129,7 +130,7 @@ begin
     BotaoIncluir.Caption := 'Incluir';
     BotaoIncluir.Left := Margem;
     BotaoIncluir.Top := (Rodape.Height - BotaoIncluir.Height) div 2;
-        // Botão Confirmar
+    // Botão Confirmar
     BotaoOk := TBitBtn.Create(FormPesquisa);
     BotaoOk.Parent := Rodape;
     BotaoOk.Kind := bkOK;
@@ -158,6 +159,11 @@ begin
   Result := FDataLink.Datasource;
 end;
 
+function TMore.GetPesquisaIndexConsulta: string;
+begin
+  Result := FDataLink.FieldName;
+end;
+
 procedure TMore.OnDbClick(Sender: TObject);
 var
   aForm: TCustomForm;
@@ -182,6 +188,33 @@ end;
 procedure TMore.SetDataSource(const Value: TDataSource);
 begin
   FDataLink.Datasource := Value;
+end;
+
+procedure TMore.SetPesquisaIndexConsulta(const Value: string);
+begin
+  FDataLink.FieldName := Value;
+end;
+
+procedure TMore.OnChangeEdt(Sender: TObject);
+var
+  aForm: TCustomForm;
+  i: Integer;
+begin
+  aForm := GetParentForm(TForm(TPanel(TMaskEdit(Sender).Parent).Parent));
+  for i := 0 to aForm.ComponentCount - 1 do
+  begin
+    if (aForm.Components[i] is TDBGrid) then
+    begin
+      if (aForm.Components[i].Name = 'grdResultados') then
+      begin
+        TDBGrid(aForm.Components[i]).DataSource.DataSet.Locate(GetPesquisaIndexConsulta, TMaskEdit(Sender).Text, [loCaseInsensitive, loPartialKey]);
+        Break;
+      end;
+
+    end;
+
+  end;
+
 end;
 
 end.

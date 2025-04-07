@@ -32,9 +32,12 @@ requires
   vcl,
   dbrtl,
   vclwinx,
-  vcldb;
+  vcldb,
+  designide,
+  dcldb;
 
 contains
-  uSearchMore in '..\Unit\uSearchMore.pas';
+  uSearchMore in '..\Unit\uSearchMore.pas',
+  uSearchMoreReg in '..\Unit\uSearchMoreReg.pas';
 
 end.
